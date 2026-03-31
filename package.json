@@ -1,0 +1,37 @@
+{
+  "name": "ragout",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/lib/db/migrate.ts",
+    "db:studio": "drizzle-kit studio",
+    "setup": "docker compose up -d && echo '⏳ Attente Postgres...' && sleep 3 && bun run db:migrate && echo '📦 Pull modèles Ollama...' && ollama pull nomic-embed-text && ollama pull llama3 && echo '✅ Setup terminé ! Lance: bun run dev'"
+  },
+  "dependencies": {
+    "next": "^15.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "drizzle-orm": "^0.39.0",
+    "postgres": "^3.4.5",
+    "epubjs": "^0.3.93",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "postcss": "^8.5.0",
+    "drizzle-kit": "^0.30.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.3.0",
+    "@eslint/eslintrc": "^3.0.0"
+  }
+}
