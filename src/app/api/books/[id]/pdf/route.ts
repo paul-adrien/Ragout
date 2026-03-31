@@ -11,7 +11,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const bookId = parseInt(id);
+  const bookId = Number.parseInt(id);
+
+  if (Number.isNaN(bookId) || bookId < 1) {
+    return NextResponse.json({ error: "ID invalide" }, { status: 400 });
+  }
 
   const [book] = await db
     .select()
@@ -32,12 +36,21 @@ export async function GET(
     return NextResponse.json({ error: "Fichier non trouvé" }, { status: 404 });
   }
 
-  const buffer = await readFile(join(uploadsDir, match));
+  // Vérifier que le fichier résolu reste dans uploads/
+  const resolvedPath = join(uploadsDir, match);
+  if (!resolvedPath.startsWith(uploadsDir)) {
+    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+  }
+
+  const buffer = await readFile(resolvedPath);
+
+  // Encoder le filename selon RFC 5987
+  const encodedFilename = encodeURIComponent(book.filename).replaceAll("'", "%27");
 
   return new Response(buffer, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${book.filename}"`,
+      "Content-Disposition": `inline; filename*=UTF-8''${encodedFilename}`,
     },
   });
 }

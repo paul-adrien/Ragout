@@ -9,7 +9,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const convId = parseInt(id);
+  const convId = Number.parseInt(id);
+
+  if (Number.isNaN(convId) || convId < 1) {
+    return NextResponse.json({ error: "ID invalide" }, { status: 400 });
+  }
 
   const all = await db
     .select()

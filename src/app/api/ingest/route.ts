@@ -17,7 +17,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Aucun fichier fourni" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop()?.toLowerCase();
+    // Sanitize filename : garder uniquement alphanum, tirets, underscores, points
+    const safeName = file.name
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // retirer accents
+      .replace(/[^a-zA-Z0-9._-]/g, "_")
+      .replace(/_{2,}/g, "_")
+      .slice(0, 200); // limiter la longueur
+
+    const ext = safeName.split(".").pop()?.toLowerCase();
     if (!ext || !["pdf", "epub"].includes(ext)) {
       return NextResponse.json(
         { error: "Format non supporté. Utilisez PDF ou EPUB." },
@@ -29,12 +36,12 @@ export async function POST(request: NextRequest) {
     const [existing] = await db
       .select({ id: books.id })
       .from(books)
-      .where(eq(books.filename, file.name))
+      .where(eq(books.filename, safeName))
       .limit(1);
 
     if (existing) {
       return NextResponse.json(
-        { error: `Ce livre est déjà dans la bibliothèque ("${file.name}")` },
+        { error: "Ce livre est déjà dans la bibliothèque" },
         { status: 409 }
       );
     }
@@ -42,12 +49,12 @@ export async function POST(request: NextRequest) {
     // Sauvegarder le fichier
     const uploadsDir = join(process.cwd(), "uploads");
     await mkdir(uploadsDir, { recursive: true });
-    const filePath = join(uploadsDir, `${Date.now()}-${file.name}`);
+    const filePath = join(uploadsDir, `${Date.now()}-${safeName}`);
     const buffer = Buffer.from(await file.arrayBuffer());
     await writeFile(filePath, buffer);
 
     // Lancer l'ingestion
-    const result = await ingestBook(filePath, file.name, ext);
+    const result = await ingestBook(filePath, safeName, ext);
 
     return NextResponse.json({
       message: `Livre ingéré avec succès`,
@@ -57,7 +64,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Ingestion error:", error);
     return NextResponse.json(
-      { error: `Erreur lors de l'ingestion: ${error}` },
+      { error: "Erreur lors de l'ingestion du livre" },
       { status: 500 }
     );
   }

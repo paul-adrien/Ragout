@@ -24,7 +24,7 @@ export async function GET() {
   } catch (error) {
     console.error("Books list error:", error);
     return NextResponse.json(
-      { error: `Erreur: ${error}` },
+      { error: "Erreur lors de la récupération des livres" },
       { status: 500 }
     );
   }

@@ -8,7 +8,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const bookId = parseInt(id);
+  const bookId = Number.parseInt(id);
+
+  if (Number.isNaN(bookId) || bookId < 1) {
+    return NextResponse.json({ error: "ID invalide" }, { status: 400 });
+  }
 
   await db.delete(books).where(eq(books.id, bookId));
 

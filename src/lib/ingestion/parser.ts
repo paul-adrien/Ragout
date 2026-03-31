@@ -46,15 +46,17 @@ export async function parsePDF(filePath: string): Promise<ParsedBook> {
 }
 
 export async function parseEpub(filePath: string): Promise<ParsedBook> {
-  const { exec } = await import("child_process");
+  const { execFile } = await import("child_process");
   const { promisify } = await import("util");
-  const execAsync = promisify(exec);
+  const execFileAsync = promisify(execFile);
   const { tmpdir } = await import("os");
   const { join } = await import("path");
   const { basename } = await import("path");
+  const { mkdir: mkdirFs } = await import("fs/promises");
 
   const tmpDir = join(tmpdir(), `epub-${Date.now()}`);
-  await execAsync(`mkdir -p "${tmpDir}" && unzip -o "${filePath}" -d "${tmpDir}"`);
+  await mkdirFs(tmpDir, { recursive: true });
+  await execFileAsync("unzip", ["-o", filePath, "-d", tmpDir]);
 
   const allFiles = await collectFiles(tmpDir);
   const htmlFiles = allFiles.filter((f) => /\.(xhtml|html|htm)$/i.test(f));
@@ -87,7 +89,8 @@ export async function parseEpub(filePath: string): Promise<ParsedBook> {
     }
   }
 
-  await execAsync(`rm -rf "${tmpDir}"`);
+  const { rm } = await import("fs/promises");
+  await rm(tmpDir, { recursive: true, force: true });
 
   return { sections, metadata: {} };
 }

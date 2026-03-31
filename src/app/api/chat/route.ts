@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Chat error:", error);
     return Response.json(
-      { error: `Erreur chat: ${error}` },
+      { error: "Erreur lors de la génération de la réponse" },
       { status: 500 }
     );
   }

@@ -2,8 +2,6 @@
 
 Copilote de cuisine branché sur votre bibliothèque personnelle d'ebooks. MVP local basé sur du RAG (Retrieval-Augmented Generation).
 
-Source EBook (https://oceanofpdf.com/)
-
 ## Stack
 
 - **Next.js 15** (App Router) — frontend + API
