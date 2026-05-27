@@ -4,13 +4,42 @@ services:
     container_name: ragout-db
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      # 5433 côté hôte pour éviter un conflit avec un autre Postgres local
+      - "5433:5432"
     environment:
       POSTGRES_USER: ragout
       POSTGRES_PASSWORD: ragout
       POSTGRES_DB: ragout
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ragout -d ragout"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    container_name: ragout-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # La DB est le service "db" sur le réseau Docker
+      DATABASE_URL: postgresql://ragout:ragout@db:5432/ragout
+      # Ollama tourne en natif sur le Mac (voir README)
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      OLLAMA_CHAT_MODEL: llama3
+    volumes:
+      # Persiste les ebooks uploadés
+      - uploads:/app/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:
+  uploads:

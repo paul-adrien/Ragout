@@ -17,7 +17,31 @@ Copilote de cuisine branché sur votre bibliothèque personnelle d'ebooks. MVP l
 - [Docker](https://docs.docker.com/get-docker/) (pour PostgreSQL)
 - [Ollama](https://ollama.ai) (`brew install ollama`)
 
-## Installation
+## Lancer tout avec Docker (app + DB)
+
+Le moyen le plus simple : un seul `docker compose up` lance l'app Next.js **et** la base Postgres/pgvector. Seul **Ollama reste natif sur le Mac** (perf GPU Metal).
+
+```bash
+# 1. Ollama doit tourner sur le Mac avec les modèles
+ollama pull nomic-embed-text && ollama pull llama3
+ollama serve   # si pas déjà lancé
+
+# 2. Lancer toute la stack (build la 1re fois)
+docker compose up -d --build
+
+# Logs / arrêt
+docker compose logs -f app
+docker compose down
+```
+
+- App accessible sur **http://localhost:3000** et, sur le même Wi-Fi, depuis le téléphone via **http://192.168.1.135:3000**.
+- Le conteneur joint Ollama via `host.docker.internal:11434` et la DB via le service `db`.
+- Postgres est exposé sur le port **5433** côté hôte (5432 interne) pour éviter les conflits.
+- Après une modif de code : `docker compose up -d --build` pour reconstruire l'image.
+
+> Sécurité : le serveur n'écoute que sur le réseau local, il n'est pas exposé à Internet. Seuls les appareils connectés au Wi-Fi peuvent y accéder.
+
+## Installation (dev sans Docker pour l'app)
 
 ### 1. Cloner et installer les dépendances
 
