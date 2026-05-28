@@ -8,7 +8,7 @@ interface QueueItem {
   message?: string;
 }
 
-export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) {
+export default function UploadForm({ onUploaded }: { readonly onUploaded?: () => void }) {
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [processing, setProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,14 +81,14 @@ export default function UploadForm({ onUploaded }: { onUploaded?: () => void }) 
   const doneCount = queue.filter((q) => q.status === "done").length;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 w-full">
       <input
         ref={fileInputRef}
         type="file"
         accept=".pdf,.epub"
         multiple
         onChange={handleFiles}
-        className="text-sm file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-gray-200 file:text-gray-700 file:cursor-pointer"
+        className="min-w-0 flex-1 text-sm file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-gray-200 file:text-gray-700 file:cursor-pointer"
         disabled={processing}
       />
       {queue.length > 0 && !processing && pendingCount > 0 && (

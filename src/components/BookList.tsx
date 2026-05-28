@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import UploadForm from "./UploadForm";
 
 interface Book {
   id: number;
@@ -12,7 +13,7 @@ interface Book {
   chunksCount: number;
 }
 
-export default function BookList({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function BookList({ open, onClose }: { readonly open: boolean; readonly onClose: () => void }) {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -36,13 +37,17 @@ export default function BookList({ open, onClose }: { open: boolean; onClose: ()
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/30 p-0 sm:p-4">
+      <div className="bg-white rounded-t-2xl sm:rounded-lg shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <h2 className="font-semibold text-gray-900">Bibliothèque</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">
+          <button onClick={onClose} className="p-1 -mr-1 text-gray-400 hover:text-gray-600 text-2xl leading-none">
             ×
           </button>
+        </div>
+        {/* Ajout de livres */}
+        <div className="px-4 py-3 border-b bg-gray-50">
+          <UploadForm onUploaded={loadBooks} />
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           {loading && <p className="text-sm text-gray-400">Chargement...</p>}

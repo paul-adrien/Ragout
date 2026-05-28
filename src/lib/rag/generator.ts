@@ -60,6 +60,10 @@ EXTRAITS DE LIVRES:
     }
   }
 
+  // Rappel de langue en dernier : c'est l'instruction la mieux suivie par le modèle,
+  // et elle contre la tendance à répondre dans la langue des extraits (souvent en anglais).
+  prompt += `\n\nIMPORTANT — LANGUE DE RÉPONSE: Rédige l'INTÉGRALITÉ de ta réponse en ${LANG_LABELS[lang]} (titre, résumé, ingrédients, étapes, tout). Les extraits ci-dessus peuvent être dans une autre langue : traduis et adapte leur contenu, mais ta réponse doit être exclusivement en ${LANG_LABELS[lang]}.`;
+
   return prompt;
 }
 

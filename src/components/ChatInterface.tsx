@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import ChatInput, { type Constraints, emptyConstraints } from "./ChatInput";
 
 interface Message {
   role: "user" | "assistant";
@@ -15,22 +16,6 @@ interface Source {
   page: number | null;
   chapter: string | null;
 }
-
-interface Constraints {
-  ingredients: string;
-  allergies: string;
-  cuisineStyle: string;
-  maxTime: string;
-  level: string;
-}
-
-const emptyConstraints: Constraints = {
-  ingredients: "",
-  allergies: "",
-  cuisineStyle: "",
-  maxTime: "",
-  level: "",
-};
 
 interface ChatInterfaceProps {
   conversationId: number | null;
@@ -183,12 +168,10 @@ export default function ChatInterface({ conversationId, onConversationCreated }:
     }
   }
 
-  const hasConstraints = Object.values(constraints).some((v) => v.trim() !== "");
-
   return (
-    <div className="flex flex-col h-full">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    <div className="flex flex-col h-full min-h-0">
+      {/* Messages (seule zone qui scrolle) */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-center text-gray-400 mt-20">
             <p className="text-2xl mb-2">🍲</p>
@@ -243,92 +226,18 @@ export default function ChatInterface({ conversationId, onConversationCreated }:
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Contraintes culinaires */}
-      {showConstraints && (
-        <div className="border-t bg-gray-50 px-4 py-3">
-          <div className="grid grid-cols-2 gap-2 max-w-2xl mx-auto">
-            <input
-              type="text"
-              placeholder="Ingrédients dispo (séparés par virgule)"
-              value={constraints.ingredients}
-              onChange={(e) => setConstraints({ ...constraints, ingredients: e.target.value })}
-              className="border rounded px-2 py-1.5 text-sm"
-            />
-            <input
-              type="text"
-              placeholder="Allergies / restrictions"
-              value={constraints.allergies}
-              onChange={(e) => setConstraints({ ...constraints, allergies: e.target.value })}
-              className="border rounded px-2 py-1.5 text-sm"
-            />
-            <input
-              type="text"
-              placeholder="Style de cuisine (italien, asiatique...)"
-              value={constraints.cuisineStyle}
-              onChange={(e) => setConstraints({ ...constraints, cuisineStyle: e.target.value })}
-              className="border rounded px-2 py-1.5 text-sm"
-            />
-            <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="Temps max (min)"
-                value={constraints.maxTime}
-                onChange={(e) => setConstraints({ ...constraints, maxTime: e.target.value })}
-                className="border rounded px-2 py-1.5 text-sm w-32"
-              />
-              <select
-                value={constraints.level}
-                onChange={(e) => setConstraints({ ...constraints, level: e.target.value })}
-                className="border rounded px-2 py-1.5 text-sm flex-1 bg-white"
-              >
-                <option value="">Niveau</option>
-                <option value="débutant">Débutant</option>
-                <option value="intermédiaire">Intermédiaire</option>
-                <option value="avancé">Avancé</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
-        <button
-          type="button"
-          onClick={() => setShowConstraints(!showConstraints)}
-          className={`px-3 py-2 border rounded-lg text-sm ${
-            hasConstraints
-              ? "bg-orange-100 text-orange-700 border-orange-300"
-              : "text-gray-500 hover:bg-gray-100"
-          }`}
-          title="Contraintes culinaires"
-        >
-          ⚙
-        </button>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Demandez une recette..."
-          className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-          disabled={loading}
-        />
-        <select
-          value={lang}
-          onChange={(e) => setLang(e.target.value as "fr" | "en")}
-          className="border rounded-lg px-2 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <option value="fr">FR</option>
-          <option value="en">EN</option>
-        </select>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm hover:bg-orange-700 disabled:opacity-50"
-        >
-          {loading ? "..." : "Envoyer"}
-        </button>
-      </form>
+      <ChatInput
+        input={input}
+        onInputChange={setInput}
+        onSubmit={handleSubmit}
+        loading={loading}
+        lang={lang}
+        onLangChange={setLang}
+        constraints={constraints}
+        onConstraintsChange={setConstraints}
+        showConstraints={showConstraints}
+        onToggleConstraints={() => setShowConstraints(!showConstraints)}
+      />
     </div>
   );
 }

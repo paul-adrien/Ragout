@@ -30,7 +30,7 @@ services:
       # Ollama tourne en natif sur le Mac (voir README)
       OLLAMA_BASE_URL: http://host.docker.internal:11434
       OLLAMA_EMBED_MODEL: nomic-embed-text
-      OLLAMA_CHAT_MODEL: llama3
+      OLLAMA_CHAT_MODEL: mistral-nemo
     volumes:
       # Persiste les ebooks uploadés
       - uploads:/app/uploads
