@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useImperativeHandle, type Ref } from "react";
 import ChatInput, { type Constraints, emptyConstraints } from "./ChatInput";
+import type { ReportContextMessage } from "@/lib/db/schema";
 
 interface Message {
   role: "user" | "assistant";
@@ -17,12 +18,18 @@ interface Source {
   chapter: string | null;
 }
 
+// API impérative exposée au parent via ref (utilisée par le bouton "Signaler")
+export interface ChatInterfaceHandle {
+  getMessages: () => ReportContextMessage[];
+}
+
 interface ChatInterfaceProps {
   conversationId: number | null;
   onConversationCreated: (id: number) => void;
+  ref?: Ref<ChatInterfaceHandle>;
 }
 
-export default function ChatInterface({ conversationId, onConversationCreated }: ChatInterfaceProps) {
+export default function ChatInterface({ conversationId, onConversationCreated, ref }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +38,15 @@ export default function ChatInterface({ conversationId, onConversationCreated }:
   const [constraints, setConstraints] = useState<Constraints>(emptyConstraints);
   const [showConstraints, setShowConstraints] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Expose getMessages() au parent (utilisé par le bouton "Signaler")
+  useImperativeHandle(
+    ref,
+    () => ({
+      getMessages: () => messages,
+    }),
+    [messages]
+  );
 
   useEffect(() => {
     if (messages.length > 0) return;

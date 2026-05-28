@@ -1,12 +1,20 @@
 "use client";
 
+import Link from "next/link";
+
 interface HeaderProps {
   readonly onToggleSidebar: () => void;
   readonly onOpenBooks: () => void;
   readonly onNewChat: () => void;
+  readonly onOpenReport: () => void;
 }
 
-export default function Header({ onToggleSidebar, onOpenBooks, onNewChat }: HeaderProps) {
+export default function Header({
+  onToggleSidebar,
+  onOpenBooks,
+  onNewChat,
+  onOpenReport,
+}: HeaderProps) {
   return (
     <header className="border-b bg-white px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between gap-2 shrink-0">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -24,6 +32,22 @@ export default function Header({ onToggleSidebar, onOpenBooks, onNewChat }: Head
         </div>
       </div>
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button
+          onClick={onOpenReport}
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-2 sm:py-1 border rounded text-sm text-gray-600 hover:bg-gray-100"
+          title="Signaler un problème"
+        >
+          <span>🚩</span>
+          <span className="hidden sm:inline">Signaler</span>
+        </button>
+        <Link
+          href="/reports"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-2 sm:py-1 border rounded text-sm text-gray-600 hover:bg-gray-100"
+          title="Liste des signalements"
+        >
+          <span>📋</span>
+          <span className="hidden sm:inline">Signalements</span>
+        </Link>
         <button
           onClick={onOpenBooks}
           className="flex items-center gap-1.5 px-2 sm:px-3 py-2 sm:py-1 border rounded text-sm text-gray-600 hover:bg-gray-100"

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import ChatInterface from "@/components/ChatInterface";
+import { useState, useEffect, useCallback, useRef } from "react";
+import ChatInterface, { type ChatInterfaceHandle } from "@/components/ChatInterface";
 import BookList from "@/components/BookList";
 import Header from "@/components/Header";
+import ReportDialog from "@/components/ReportDialog";
+import type { ReportContextMessage } from "@/lib/db/schema";
 
 interface Conversation {
   id: number;
@@ -18,6 +20,16 @@ export default function Home() {
   // Fermée par défaut (mobile-first) ; ouverte au mount si on est sur grand écran.
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [booksOpen, setBooksOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportMessages, setReportMessages] = useState<ReportContextMessage[]>([]);
+
+  // Ref vers ChatInterface pour récupérer les messages au moment du clic "Signaler"
+  const chatRef = useRef<ChatInterfaceHandle>(null);
+
+  function handleOpenReport() {
+    setReportMessages(chatRef.current?.getMessages() ?? []);
+    setReportOpen(true);
+  }
 
   const loadConversations = useCallback(async () => {
     const res = await fetch("/api/conversations");
@@ -61,6 +73,7 @@ export default function Home() {
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         onOpenBooks={() => setBooksOpen(true)}
         onNewChat={handleNewChat}
+        onOpenReport={handleOpenReport}
       />
 
       {/* Body */}
@@ -110,6 +123,7 @@ export default function Home() {
         {/* Chat */}
         <div className="flex-1 min-w-0 min-h-0 overflow-hidden">
           <ChatInterface
+            ref={chatRef}
             key={chatKey}
             conversationId={activeConvId}
             onConversationCreated={handleConversationCreated}
@@ -117,6 +131,12 @@ export default function Home() {
         </div>
       </div>
       <BookList open={booksOpen} onClose={() => setBooksOpen(false)} />
+      <ReportDialog
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        conversationId={activeConvId}
+        messages={reportMessages}
+      />
     </main>
   );
 }

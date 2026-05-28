@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp, index, customType } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, index, customType, jsonb } from "drizzle-orm/pg-core";
 
 // Custom type pour pgvector
 const vector = customType<{ data: number[]; driverParam: string }>({
@@ -57,4 +57,30 @@ export const messages = pgTable("messages", {
   role: text("role").notNull(), // 'user' | 'assistant'
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export interface ReportContextMessage {
+  role: "user" | "assistant";
+  content: string;
+  sources?: Array<{
+    bookId: number;
+    bookTitle: string;
+    bookFilename: string;
+    page: number | null;
+    chapter: string | null;
+  }>;
+}
+
+export const issueReports = pgTable("issue_reports", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").references(() => conversations.id, {
+    onDelete: "set null",
+  }),
+  description: text("description").notNull(),
+  // 'open' | 'blocked' | 'resolved' | 'archived'
+  status: text("status").notNull().default("open"),
+  // Snapshot figé des messages capturés au moment du signalement
+  contextMessages: jsonb("context_messages").$type<ReportContextMessage[]>().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
 });

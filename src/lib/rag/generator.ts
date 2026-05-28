@@ -67,8 +67,46 @@ EXTRAITS DE LIVRES:
   return prompt;
 }
 
+/**
+ * Reformule la dernière question en requête de recherche autonome, en intégrant
+ * le contexte de la conversation. Sans ça, un suivi du type "j'aimerais d'autres
+ * recettes" déclenche un retrieval aveugle qui ramène des chunks hors sujet.
+ */
+async function rewriteQueryWithHistory(
+  query: string,
+  history: HistoryMessage[]
+): Promise<string> {
+  // history inclut le message courant en dernier → on le retire pour ne pas le dupliquer
+  const previous = history.slice(0, -1);
+  if (previous.length === 0) return query;
+
+  const transcript = previous
+    .map((m) => `${m.role === "user" ? "Utilisateur" : "Assistant"}: ${m.content}`)
+    .join("\n");
+
+  const system =
+    "Tu reformules la dernière question d'un utilisateur en une requête de recherche AUTONOME pour un moteur de recherche culinaire. " +
+    "Intègre le contexte de la conversation (plat, ingrédients, technique déjà évoqués) seulement si la nouvelle question en dépend. " +
+    "Réponds UNIQUEMENT par la requête reformulée en français, sur une seule ligne, sans préambule, sans guillemets, sans explication.";
+
+  const user = `Conversation précédente:\n${transcript}\n\nNouvelle question: ${query}\n\nRequête de recherche autonome:`;
+
+  try {
+    const rewritten = await chatCompletion([
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ]);
+    const cleaned = rewritten.trim().replace(/^["']|["']$/g, "").split("\n")[0].trim();
+    return cleaned || query;
+  } catch (err) {
+    console.warn("[RAG] query rewrite failed, falling back to raw query:", err);
+    return query;
+  }
+}
+
 export async function generateRecipe(request: ChatRequest): Promise<string> {
-  const chunks = await retrieveChunks(request.query, 5);
+  const searchQuery = await rewriteQueryWithHistory(request.query, request.history || []);
+  const chunks = await retrieveChunks(searchQuery, 5);
   const systemPrompt = buildSystemPrompt(chunks, request.lang, request.constraints);
 
   return chatCompletion([
@@ -89,7 +127,11 @@ export async function streamRecipeWithSources(request: ChatRequest): Promise<{
   sources: RecipeSource[];
   stream: AsyncGenerator<string>;
 }> {
-  const chunks = await retrieveChunks(request.query, 5);
+  const searchQuery = await rewriteQueryWithHistory(request.query, request.history || []);
+  if (searchQuery !== request.query) {
+    console.log(`[RAG] query rewrite: "${request.query}" → "${searchQuery}"`);
+  }
+  const chunks = await retrieveChunks(searchQuery, 5);
   const systemPrompt = buildSystemPrompt(chunks, request.lang, request.constraints);
 
   // Dédupliquer les sources par bookId+page
