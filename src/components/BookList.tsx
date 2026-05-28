@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import UploadForm from "./UploadForm";
+import ImageUploadForm from "./ImageUploadForm";
 
 interface Book {
   id: number;
@@ -45,9 +46,20 @@ export default function BookList({ open, onClose }: { readonly open: boolean; re
             ×
           </button>
         </div>
-        {/* Ajout de livres */}
+        {/* Ajout de livres (PDF / EPUB) */}
         <div className="px-4 py-3 border-b bg-gray-50">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+            📚 Ajouter un livre
+          </h3>
           <UploadForm onUploaded={loadBooks} />
+        </div>
+
+        {/* Ajout d'une recette depuis une image (photo ou screenshot) */}
+        <div className="px-4 py-3 border-b bg-gray-50">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+            📷 Ajouter une recette depuis une photo
+          </h3>
+          <ImageUploadForm onUploaded={loadBooks} />
         </div>
         <div className="flex-1 overflow-y-auto p-4">
           {loading && <p className="text-sm text-gray-400">Chargement...</p>}
