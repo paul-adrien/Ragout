@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+/* Empêche iOS Safari de zoomer automatiquement sur le focus d'un champ : */
+/* iOS déclenche le zoom si la font-size de l'input est < 16px. */
+/* On force 16px sur mobile uniquement, sans alourdir l'UI desktop. */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
